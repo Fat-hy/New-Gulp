@@ -1,20 +1,42 @@
-var gulp = require("gulp");
-var rename = require("gulp-rename");
-const sass = require("gulp-sass")(require("sass"));
-var styleSRC = "./src/scss/style.scss";
-var styleDIST = "./dist/css/";
+import gulp from "gulp";
+import rename from "gulp-rename";
+import imagemin from "gulp-imagemin";
+import imageminJpegtran from "imagemin-jpegtran";
+import imageminPngquant from "imagemin-pngquant";
+import dartSass from "sass";
+import gulpSass from "gulp-sass";
+const sass = gulpSass(dartSass);
 
-gulp.task("style", function (done) {
-  gulp
+const styleSRC = "./src/scss/style.scss";
+const styleDIST = "./dist/css/";
+
+export function buildStyles() {
+  return gulp
     .src(styleSRC)
     .pipe(
-      sass({
-        errorLogToConsole: true,
-        outputStyle: "compressed",
-      })
+      sass({ outputStyle: "compressed", sass: dartSass }).on(
+        "error",
+        sass.logError
+      )
     )
-    .on("error", console.error.bind(console))
     .pipe(rename({ suffix: ".min" }))
     .pipe(gulp.dest(styleDIST));
-  done();
-});
+}
+export function optimizeImages() {
+  return gulp
+    .src("./src/images/*.{jpg,jpeg,png}")
+    .pipe(
+      imagemin([
+        imageminJpegtran(),
+        imageminPngquant({
+          quality: [0.6, 0.8],
+          speed: 1,
+        }),
+      ])
+    )
+    .pipe(gulp.dest("./dist/images"));
+}
+
+export const build = gulp.parallel(buildStyles, optimizeImages);
+
+export default build;
