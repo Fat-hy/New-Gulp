@@ -34,6 +34,9 @@ export function optimizeImages() {
         }),
       ])
     )
+    .on("error", function (err) {
+      console.error(err);
+    })
     .pipe(gulp.dest("./dist/images"));
 }
 
